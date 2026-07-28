@@ -1,0 +1,8 @@
+source_native_id,title,content_type,release_year,country_code,language_code,platform,metric_date,views,watch_seconds,unique_viewers,starts,completions,revenue_cents,external_id,external_id_namespace
+demo-office-us,The Office (2005),series,2005,US,en,Peacock,2026-07-28,125000,165000000,91000,132000,82000,225000,office-us-2005,partner
+demo-office-alias,"Office, The",series,2005,US,en,Netflix,2026-07-28,98000,129360000,73000,104000,64000,176400,,
+demo-office-ambiguous,The Office,series,,,en,Hulu,2026-07-28,42000,55440000,31000,45000,27000,75600,,
+demo-office-uk,The Office (UK),series,2001,GB,en,Hulu,2026-07-28,35000,46200000,26000,38000,22000,63000,,
+demo-parks,Parks & Rec,series,2009,US,en,Peacock,2026-07-28,68000,89760000,49000,73000,43000,122400,,
+demo-oppenheimer,Oppenheimer,movie,2023,US,en,Netflix,2026-07-28,83000,597600000,61000,87000,58000,149400,oppenheimer-2023,partner
+demo-unresolved,Office Hours,movie,2024,US,en,Hulu,2026-07-28,1200,8640000,900,1300,700,2160,,
