@@ -16,6 +16,7 @@ export interface ContentFilters {
   platform?: string;
   country?: string;
   quality?: string;
+  sort?: "views" | "title" | "year" | "confidence";
   page?: number;
   pageSize?: number;
 }
@@ -53,6 +54,14 @@ export async function getContentCatalog(
         return false;
       return true;
     });
+    items = [...items].sort((a, b) => {
+      if (filters.sort === "title") return a.title.localeCompare(b.title);
+      if (filters.sort === "year")
+        return (b.releaseYear ?? 0) - (a.releaseYear ?? 0);
+      if (filters.sort === "confidence")
+        return (b.confidence ?? 0) - (a.confidence ?? 0);
+      return b.views - a.views;
+    });
     const total = items.length;
     items = items.slice((page - 1) * pageSize, page * pageSize);
     return { items, total, page, pageSize };
@@ -77,6 +86,14 @@ export async function getContentCatalog(
   ];
   const where = sql.join(conditions, sql` and `);
   const offset = (page - 1) * pageSize;
+  const orderBy =
+    filters.sort === "title"
+      ? sql`c.display_title asc, c.release_year desc`
+      : filters.sort === "year"
+        ? sql`c.release_year desc nulls last, c.display_title`
+        : filters.sort === "confidence"
+          ? sql`c.confidence desc nulls last, c.display_title`
+          : sql`c.views desc, c.display_title`;
 
   const result = await db.execute<Row>(sql`
     with platforms as (
@@ -103,7 +120,9 @@ export async function getContentCatalog(
         coalesce(aliases.alias_count, 0) as aliases,
         coalesce(platforms.views, 0) as views,
         coalesce(platforms.watch_seconds, 0) as watch_seconds,
-        mappings.confidence
+        mappings.confidence,
+        coalesce(c.metadata->'genres', '[]'::jsonb) as genres,
+        coalesce(c.metadata->>'accent', '#475569') as accent
       from catalog.content c
       join catalog.content_type ct on ct.id = c.content_type_id
       left join platforms on platforms.content_id = c.id
@@ -115,7 +134,7 @@ export async function getContentCatalog(
     cross join lateral (select c.platforms as names) platforms
     cross join lateral (select c.confidence) mappings
     where ${where}
-    order by c.views desc, c.display_title
+    order by ${orderBy}
     limit ${pageSize} offset ${offset}
   `);
 
@@ -131,6 +150,8 @@ export async function getContentCatalog(
     views: number(row.views),
     watchSeconds: number(row.watch_seconds),
     confidence: row.confidence == null ? null : number(row.confidence),
+    genres: Array.isArray(row.genres) ? row.genres.map(String) : [],
+    accent: string(row.accent) || "#475569",
   }));
 
   return {
@@ -148,16 +169,29 @@ export async function getContentDetail(
 
   const workspace = await getCurrentWorkspace();
   const db = getDb();
-  const [base, aliases, sources, history, daily, platformMetrics, identifiers] =
-    await Promise.all([
-      getContentCatalog({ pageSize: 50 }).then((result) =>
-        result.items.find((item) => item.id === id),
-      ),
-      db.execute<Row>(sql`
+  const [
+    base,
+    metadata,
+    aliases,
+    sources,
+    history,
+    daily,
+    platformMetrics,
+    identifiers,
+  ] = await Promise.all([
+    getContentCatalog({ pageSize: 50 }).then((result) =>
+      result.items.find((item) => item.id === id),
+    ),
+    db.execute<Row>(sql`
+        select original_title, original_language, status, runtime_seconds,
+          metadata->>'synopsis' as synopsis
+        from catalog.content where id = ${id}
+      `),
+    db.execute<Row>(sql`
         select title, title_type::text as type, country_code as country, is_primary
         from catalog.content_title where content_id = ${id} order by is_primary desc, title
       `),
-      db.execute<Row>(sql`
+    db.execute<Row>(sql`
         select se.id, se.raw_title, ss.name as system, cm.confidence, cm.decision_method::text as method
         from resolution.content_mapping cm
         join ingest.source_entity se on se.id = cm.source_entity_id
@@ -166,7 +200,7 @@ export async function getContentDetail(
           and cm.decision_status = 'accepted' and cm.valid_to is null
         order by ss.name
       `),
-      db.execute<Row>(sql`
+    db.execute<Row>(sql`
         select cm.id, ss.name as source, c.display_title as content_title,
           cm.decision_status::text as status, cm.valid_from, cm.valid_to
         from resolution.content_mapping cm
@@ -176,31 +210,44 @@ export async function getContentDetail(
         where cm.workspace_id = ${workspace.id} and cm.content_id = ${id}
         order by cm.valid_from desc
       `),
-      db.execute<Row>(sql`
+    db.execute<Row>(sql`
         select metric_date::text as date, sum(views) as views
         from analytics.content_metric_daily
         where workspace_id = ${workspace.id} and content_id = ${id}
         group by metric_date order by metric_date
       `),
-      db.execute<Row>(sql`
+    db.execute<Row>(sql`
         select p.name as platform, sum(m.views) as views
         from analytics.content_metric_daily m
         join catalog.platform p on p.id = m.platform_id
         where m.workspace_id = ${workspace.id} and m.content_id = ${id}
         group by p.id, p.name order by views desc
       `),
-      db.execute<Row>(sql`
+    db.execute<Row>(sql`
         select namespace, external_id as value, external_url as url
         from catalog.external_identifier where content_id = ${id}
       `),
-    ]);
+  ]);
 
   if (!base) return null;
+  const metadataRow = metadata.rows[0] ?? {};
   return {
     ...base,
-    originalTitle: null,
-    language: "en",
-    status: "active",
+    originalTitle:
+      metadataRow.original_title == null
+        ? null
+        : string(metadataRow.original_title),
+    language:
+      metadataRow.original_language == null
+        ? null
+        : string(metadataRow.original_language),
+    status: metadataRow.status == null ? null : string(metadataRow.status),
+    synopsis:
+      metadataRow.synopsis == null ? null : string(metadataRow.synopsis),
+    runtimeSeconds:
+      metadataRow.runtime_seconds == null
+        ? null
+        : number(metadataRow.runtime_seconds),
     aliasesList: aliases.rows.map((row) => ({
       title: string(row.title),
       type: string(row.type),

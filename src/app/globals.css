@@ -8,13 +8,13 @@
 
 :root {
   color-scheme: light;
-  --background: #f6f8fb;
-  --foreground: #0f172a;
+  --background: #f3f6fa;
+  --foreground: #101828;
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --border: #e2e8f0;
-  --muted: #64748b;
-  --primary: #2563eb;
+  --card-foreground: #101828;
+  --border: #e5eaf1;
+  --muted: #667085;
+  --primary: #335cff;
   --primary-foreground: #ffffff;
 }
 
@@ -24,7 +24,13 @@
 
 body {
   min-height: 100vh;
-  background: var(--background);
+  background:
+    radial-gradient(
+      circle at 82% -10%,
+      rgb(219 234 254 / 0.55),
+      transparent 27rem
+    ),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   font-feature-settings:
@@ -34,7 +40,7 @@ body {
 }
 
 ::selection {
-  background: #bfdbfe;
+  background: #c7d7fe;
 }
 
 button,
@@ -48,7 +54,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #335cff;
 }
 
 .metric-grid {
@@ -57,17 +63,72 @@ select:focus-visible {
 }
 
 .data-table th {
-  color: #64748b;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  color: #667085;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
 .data-table tbody tr {
-  border-top: 1px solid #edf1f6;
+  border-top: 1px solid #edf0f5;
+  transition:
+    background-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .data-table tbody tr:hover {
-  background: #f8fafc;
+  background: #f8faff;
+  box-shadow: inset 3px 0 0 #5b7cfa;
+}
+
+input,
+select,
+textarea {
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #cbd5e1;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #8ca4ff;
+  box-shadow: 0 0 0 3px rgb(51 92 255 / 0.1);
+}
+
+.surface-grid {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.poster-grain {
+  background-image:
+    linear-gradient(145deg, rgb(255 255 255 / 0.28), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgb(255 255 255 / 0.24), transparent 30%);
+}
+
+.scrollbar-thin {
+  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

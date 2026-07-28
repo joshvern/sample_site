@@ -37,11 +37,10 @@ export interface DashboardData {
     latestDate: string;
     status: "Fresh" | "Watch" | "Stale";
   }>;
+  overlapPlatforms: string[];
   overlap: Array<{
     title: string;
-    Peacock: boolean;
-    Netflix: boolean;
-    Hulu: boolean;
+    platforms: string[];
   }>;
 }
 
@@ -57,6 +56,8 @@ export interface CatalogItem {
   views: number;
   watchSeconds: number;
   confidence: number | null;
+  genres: string[];
+  accent: string;
 }
 
 export interface CatalogResult {
@@ -70,6 +71,8 @@ export interface ContentDetail extends CatalogItem {
   originalTitle: string | null;
   language: string | null;
   status: string | null;
+  synopsis: string | null;
+  runtimeSeconds: number | null;
   aliasesList: Array<{
     title: string;
     type: string;

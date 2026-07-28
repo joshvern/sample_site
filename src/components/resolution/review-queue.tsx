@@ -89,8 +89,8 @@ export function ReviewQueue({
 
   if (items.length === 0) {
     return (
-      <Card className="py-20 text-center">
-        <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+      <Card className="py-24 text-center">
+        <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
           <Check className="size-6" />
         </span>
         <h2 className="mt-4 font-bold text-slate-900">Review queue is clear</h2>
@@ -106,43 +106,46 @@ export function ReviewQueue({
       {message && (
         <div
           role="status"
-          className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800"
+          className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800"
         >
           <CircleAlert className="size-4" /> {message}
         </div>
       )}
       {items.map((review, reviewIndex) => (
         <Card key={review.id} className="overflow-hidden">
-          <div className="border-b border-slate-100 bg-slate-50/60 px-5 py-4">
+          <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/30 px-5 py-5 sm:px-6">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold tracking-widest text-blue-600 uppercase">
+                  <span className="text-[9px] font-bold tracking-[0.16em] text-[#335cff] uppercase">
                     Review {reviewIndex + 1} of {items.length}
                   </span>
-                  <Badge className="bg-amber-50 text-amber-700">
+                  <Badge className="border-amber-100 bg-amber-50 text-amber-700">
                     Ambiguous
                   </Badge>
                 </div>
-                <h2 className="mt-2 text-xl font-bold text-slate-950">
+                <h2 className="mt-2 text-2xl font-bold tracking-[-0.03em] text-slate-950">
                   {review.rawTitle}
                 </h2>
                 <p className="mt-1 text-xs text-slate-500">
                   Source record from {review.sourceSystem}
                 </p>
               </div>
-              <dl className="grid grid-cols-4 gap-x-7 gap-y-2 text-xs">
+              <dl className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
                 {[
                   ["Platform", review.platform],
                   ["Type", review.contentType],
                   ["Year", review.releaseYear ?? "Missing"],
                   ["Country", review.country ?? "Missing"],
                 ].map(([label, value]) => (
-                  <div key={String(label)}>
-                    <dt className="text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+                  <div
+                    key={String(label)}
+                    className="min-w-24 rounded-xl border border-slate-200/70 bg-white/80 px-3 py-2.5"
+                  >
+                    <dt className="text-[8px] font-bold tracking-wide text-slate-400 uppercase">
                       {label}
                     </dt>
-                    <dd className="mt-1 font-semibold text-slate-700 capitalize">
+                    <dd className="mt-1 text-[11px] font-bold text-slate-700 capitalize">
                       {value}
                     </dd>
                   </div>
@@ -151,37 +154,54 @@ export function ReviewQueue({
             </div>
           </div>
 
-          <div className="p-5">
-            <p className="mb-3 text-xs font-bold tracking-wide text-slate-500 uppercase">
+          <div className="p-5 sm:p-6">
+            <p className="mb-3 text-[9px] font-bold tracking-[0.14em] text-slate-400 uppercase">
               Candidate matches
             </p>
             <div className="grid gap-4 lg:grid-cols-2">
-              {review.candidates.map((candidate) => (
+              {review.candidates.map((candidate, candidateIndex) => (
                 <div
                   key={candidate.id}
-                  className="rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-300 hover:shadow-sm"
+                  className="group rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_14px_30px_rgba(51,92,255,.08)]"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <Link
-                        href={`/content/${candidate.contentId}`}
-                        className="inline-flex items-center gap-1 font-bold text-slate-900 hover:text-blue-600"
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`poster-grain flex h-14 w-10 shrink-0 items-end rounded-lg p-1.5 text-[7px] leading-tight font-black tracking-wide text-white uppercase ${
+                          candidateIndex % 2 === 0
+                            ? "bg-[#335cff]"
+                            : "bg-[#7c3aed]"
+                        }`}
                       >
-                        {candidate.title}
-                        <ExternalLink className="size-3" />
-                      </Link>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {candidate.descriptor}
-                      </p>
+                        {candidate.title.slice(0, 8)}
+                      </span>
+                      <div>
+                        <Link
+                          href={`/content/${candidate.contentId}`}
+                          className="inline-flex items-center gap-1 font-bold text-slate-900 hover:text-[#335cff]"
+                        >
+                          {candidate.title}
+                          <ExternalLink className="size-3" />
+                        </Link>
+                        <p className="mt-1 text-[10px] text-slate-500">
+                          {candidate.descriptor}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold tracking-tight text-slate-950">
+                      <p className="text-2xl font-bold tracking-[-0.04em] text-slate-950">
                         {(candidate.score * 100).toFixed(0)}%
                       </p>
-                      <p className="text-[9px] font-semibold text-slate-400 uppercase">
+                      <p className="text-[8px] font-bold tracking-wide text-slate-400 uppercase">
                         Match score
                       </p>
                     </div>
+                  </div>
+                  <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#335cff] to-[#8ca4ff]"
+                      style={{ width: `${candidate.score * 100}%` }}
+                    />
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -236,10 +256,10 @@ export function ReviewQueue({
                       }
                     />
                   </div>
-                  <p className="mt-3 text-[11px] text-slate-400 capitalize">
+                  <p className="mt-3 text-[9px] font-semibold text-slate-400 capitalize">
                     Method: {candidate.method}
                   </p>
-                  <div className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
+                  <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-100 pt-4">
                     <Button
                       size="sm"
                       disabled={isPending}
@@ -301,7 +321,7 @@ export function ReviewQueue({
               </Button>
             </div>
             {alternateReviewId === review.id && (
-              <div className="mt-3 flex flex-col gap-2 rounded-lg border border-blue-100 bg-blue-50/60 p-3 sm:flex-row sm:items-end">
+              <div className="mt-3 flex flex-col gap-2 rounded-xl border border-blue-100 bg-blue-50/60 p-4 sm:flex-row sm:items-end">
                 <label className="flex-1">
                   <span className="text-[10px] font-bold tracking-wide text-blue-700 uppercase">
                     Canonical content ID
@@ -312,7 +332,7 @@ export function ReviewQueue({
                       setAlternateContentId(event.target.value)
                     }
                     placeholder="Paste a UUID from the catalog"
-                    className="mt-1 h-9 w-full rounded-lg border border-blue-200 bg-white px-3 text-sm text-slate-700"
+                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 bg-white px-3 text-sm text-slate-700"
                   />
                 </label>
                 <Button
@@ -341,8 +361,8 @@ function Feature({
   state: "match" | "missing" | "conflict";
 }) {
   return (
-    <div className="rounded-lg bg-slate-50 px-2.5 py-2">
-      <p className="text-[9px] font-semibold tracking-wide text-slate-400 uppercase">
+    <div className="rounded-xl border border-slate-100 bg-slate-50 px-2.5 py-2.5">
+      <p className="text-[8px] font-bold tracking-wide text-slate-400 uppercase">
         {label}
       </p>
       <p
