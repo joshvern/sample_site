@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --color-ink: #0f172a;
+  --color-canvas: #f6f8fb;
+}
+
+:root {
+  color-scheme: light;
+  --background: #f6f8fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings:
+    "cv02" 1,
+    "cv03" 1,
+    "cv04" 1;
+}
+
+::selection {
+  background: #bfdbfe;
+}
+
+button,
+a,
+input,
+select {
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #2563eb;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+}
+
+.data-table th {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.data-table tbody tr {
+  border-top: 1px solid #edf1f6;
+}
+
+.data-table tbody tr:hover {
+  background: #f8fafc;
+}
