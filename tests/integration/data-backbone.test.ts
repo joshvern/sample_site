@@ -42,7 +42,7 @@ describeWithDatabase("canonical data backbone", () => {
     });
     return expect(
       pool.query("select count(*)::int as count from catalog.content"),
-    ).resolves.toMatchObject({ rows: [{ count: 4 }] });
+    ).resolves.toMatchObject({ rows: [{ count: 24 }] });
   });
 
   it("keeps US and UK editions distinct", async () => {
@@ -77,7 +77,7 @@ describeWithDatabase("canonical data backbone", () => {
       from analytics.content_metric_daily
       where content_id = '00000000-0000-4000-8000-000000000301'
     `);
-    expect(result.rows[0].days).toBe(60);
+    expect(result.rows[0].days).toBe(180);
     expect(Number(result.rows[0].views)).toBeGreaterThan(0);
   });
 

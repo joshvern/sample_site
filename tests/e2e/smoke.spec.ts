@@ -8,14 +8,16 @@ test("dashboard loads with canonical metrics", async ({ page }) => {
     page.getByRole("heading", { name: "Content intelligence" }),
   ).toBeVisible();
   await expect(
-    page.getByLabel("Key metrics").getByText("Canonical content"),
+    page.getByLabel("Key metrics").getByText("Canonical titles"),
   ).toBeVisible();
   await expect(page.getByText("Views over time")).toBeVisible();
 });
 
 test("catalog loads, filters, and opens detail", async ({ page }) => {
   await page.goto("/content");
-  await expect(page.getByRole("heading", { name: "Content" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Content library" }),
+  ).toBeVisible();
   await page.getByPlaceholder("Search titles and aliases…").fill("Oppenheimer");
   await page.getByRole("button", { name: "Apply" }).click();
   await expect(page.getByRole("link", { name: "Oppenheimer" })).toBeVisible();
@@ -45,7 +47,7 @@ test("CSV preview accepts the example file", async ({ page }) => {
     .locator('input[type="file"]')
     .setInputFiles(path.resolve("public/examples/content-metrics-example.csv"));
   await expect(page.getByText("Map CSV columns")).toBeVisible();
-  await expect(page.getByText("7 rows · 7 valid · 0 failed")).toBeVisible();
+  await expect(page.getByText("18 rows · 18 valid · 0 failed")).toBeVisible();
 });
 
 test("primary dashboard has no automatically detectable accessibility issues", async ({

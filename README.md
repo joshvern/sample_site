@@ -15,6 +15,13 @@ source_entity → match_candidate → content_mapping
 The app includes a coherent read-only demo when no database is configured. Real
 ingestion and resolution mutations require Postgres.
 
+The deterministic seed includes 24 recognizable movies and series, 39
+cross-platform source identities, eight source systems, three deliberately
+ambiguous review cases, authority links for IMDb and TMDB identifiers, and 90
+days of formula-generated metrics. See
+[Sample data and provenance](docs/SAMPLE_DATA.md) for licensing boundaries and
+fixture design.
+
 ## Architecture
 
 ```mermaid

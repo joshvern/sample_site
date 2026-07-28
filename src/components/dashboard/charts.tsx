@@ -18,15 +18,15 @@ import type { DashboardData } from "@/types/domain";
 import { formatCompactNumber } from "@/lib/utils";
 
 const tooltipStyle = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  boxShadow: "0 8px 24px rgba(15,23,42,.08)",
+  border: "1px solid #e5eaf1",
+  borderRadius: 12,
+  boxShadow: "0 12px 30px rgba(15,23,42,.12)",
   fontSize: 12,
 };
 
 export function ViewsChart({ data }: { data: DashboardData["dailyViews"] }) {
   return (
-    <div className="h-[275px]" role="img" aria-label="Daily views over time">
+    <div className="h-[300px]" role="img" aria-label="Daily views over time">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
@@ -34,8 +34,8 @@ export function ViewsChart({ data }: { data: DashboardData["dailyViews"] }) {
         >
           <defs>
             <linearGradient id="views-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2563eb" stopOpacity={0.22} />
-              <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
+              <stop offset="0%" stopColor="#335cff" stopOpacity={0.24} />
+              <stop offset="100%" stopColor="#335cff" stopOpacity={0.01} />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} stroke="#eef2f7" />
@@ -76,12 +76,12 @@ export function ViewsChart({ data }: { data: DashboardData["dailyViews"] }) {
           <Area
             type="monotone"
             dataKey="views"
-            stroke="#2563eb"
+            stroke="#335cff"
             strokeWidth={2.5}
             fill="url(#views-fill)"
             activeDot={{
               r: 4,
-              fill: "#2563eb",
+              fill: "#335cff",
               strokeWidth: 2,
               stroke: "white",
             }}
@@ -98,7 +98,7 @@ export function PlatformChart({
   data: DashboardData["platformPerformance"];
 }) {
   return (
-    <div className="h-[275px]" role="img" aria-label="Views by platform">
+    <div className="h-[300px]" role="img" aria-label="Views by platform">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
@@ -126,7 +126,7 @@ export function PlatformChart({
             cursor={{ fill: "#f8fafc" }}
             formatter={(value) => [formatCompactNumber(Number(value)), "Views"]}
           />
-          <Bar dataKey="views" radius={[0, 5, 5, 0]} barSize={22}>
+          <Bar dataKey="views" radius={[0, 6, 6, 0]} barSize={16}>
             {data.map((entry) => (
               <Cell key={entry.platform} fill={entry.color} />
             ))}

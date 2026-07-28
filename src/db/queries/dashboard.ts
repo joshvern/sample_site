@@ -38,11 +38,13 @@ export async function getDashboardData(): Promise<DashboardData> {
         group by metric_date order by metric_date
       `),
       db.execute<Row>(sql`
-        select p.name as platform, sum(m.views) as views, sum(m.watch_seconds) as watch_seconds
+        select p.name as platform, sum(m.views) as views,
+          sum(m.watch_seconds) as watch_seconds,
+          coalesce(p.metadata->>'brandColor', '#64748b') as color
         from analytics.content_metric_daily m
         join catalog.platform p on p.id = m.platform_id
         where m.workspace_id = ${workspaceId}
-        group by p.id, p.name order by views desc
+        group by p.id, p.name, p.metadata order by views desc
       `),
       db.execute<Row>(sql`
         select c.id, c.display_title as title, ct.name as content_type,
@@ -52,7 +54,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         join catalog.content_type ct on ct.id = c.content_type_id
         where m.workspace_id = ${workspaceId}
         group by c.id, c.display_title, ct.name, c.release_year, c.origin_country
-        order by views desc limit 5
+        order by views desc limit 7
       `),
       db.execute<Row>(sql`
         select r.id, s.name as source, r.status::text, r.completed_at,
@@ -60,18 +62,24 @@ export async function getDashboardData(): Promise<DashboardData> {
         from ingest.ingestion_run r
         join ingest.source_system s on s.id = r.source_system_id
         where s.workspace_id = ${workspaceId}
-        order by r.started_at desc limit 5
+        order by r.started_at desc limit 6
       `),
       db.execute<Row>(sql`
         select
-          count(*) filter (where confidence::numeric >= .95 and valid_to is null)::int as high,
-          count(*) filter (where confidence::numeric >= .70 and confidence::numeric < .95 and valid_to is null)::int as review,
+          (select count(*) from resolution.content_mapping
+            where workspace_id = ${workspaceId} and confidence::numeric >= .95
+              and decision_status = 'accepted' and valid_to is null)::int as high,
+          (select count(distinct source_entity_id) from resolution.match_candidate
+            where workspace_id = ${workspaceId} and status = 'pending')::int as review,
           greatest(
             (select count(*) from ingest.source_entity where workspace_id = ${workspaceId}) -
-            count(*) filter (where decision_status = 'accepted' and valid_to is null),
+            (select count(distinct source_entity_id) from resolution.content_mapping
+              where workspace_id = ${workspaceId} and decision_status = 'accepted'
+                and valid_to is null) -
+            (select count(distinct source_entity_id) from resolution.match_candidate
+              where workspace_id = ${workspaceId} and status = 'pending'),
             0
           )::int as unresolved
-        from resolution.content_mapping where workspace_id = ${workspaceId}
       `),
       db.execute<Row>(sql`
         select s.name as source, coalesce(p.name, 'Unassigned') as platform,
@@ -90,7 +98,9 @@ export async function getDashboardData(): Promise<DashboardData> {
         join catalog.platform p on p.id = m.platform_id
         where m.workspace_id = ${workspaceId}
         group by c.id, c.display_title, c.release_year, c.origin_country
-        order by c.display_title
+        having count(distinct p.id) > 1
+        order by count(distinct p.id) desc, c.display_title
+        limit 8
       `),
     ]);
 
@@ -98,8 +108,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   const totalViews = number(summary.total_views);
   const sourceCount = number(summary.source_entities);
   const matchedCount = number(summary.matched_entities);
-  const colors = ["#2563eb", "#7c3aed", "#0d9488", "#f59e0b", "#64748b"];
   const qualityRow = quality.rows[0] ?? {};
+  const overlapPlatforms = platforms.rows
+    .slice(0, 6)
+    .map((row) => string(row.platform));
 
   return {
     kpis: {
@@ -116,11 +128,11 @@ export async function getDashboardData(): Promise<DashboardData> {
       date: string(row.date),
       views: number(row.views),
     })),
-    platformPerformance: platforms.rows.map((row, index) => ({
+    platformPerformance: platforms.rows.map((row) => ({
       platform: string(row.platform),
       views: number(row.views),
       watchSeconds: number(row.watch_seconds),
-      color: colors[index % colors.length] ?? "#64748b",
+      color: string(row.color) || "#64748b",
     })),
     topContent: top.rows.map((row) => {
       const views = number(row.views);
@@ -171,15 +183,14 @@ export async function getDashboardData(): Promise<DashboardData> {
         status: age <= 1 ? "Fresh" : age <= 3 ? "Watch" : "Stale",
       };
     }),
+    overlapPlatforms,
     overlap: overlap.rows.map((row) => {
       const names = Array.isArray(row.platforms)
         ? row.platforms.map(String)
         : [];
       return {
-        title: `${string(row.title)} · ${string(row.origin_country)}`,
-        Peacock: names.includes("Peacock"),
-        Netflix: names.includes("Netflix"),
-        Hulu: names.includes("Hulu"),
+        title: `${string(row.title)} · ${string(row.release_year)}`,
+        platforms: names,
       };
     }),
   };
