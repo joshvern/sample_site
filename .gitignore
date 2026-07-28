@@ -4,10 +4,9 @@ out
 coverage
 test-results
 playwright-report
-.env
-.env.local
-.env.*.local
+.env*
 !.env.example
 *.tsbuildinfo
 .DS_Store
 drizzle/meta
+.vercel
